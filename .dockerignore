@@ -1,0 +1,11 @@
+.git
+.gitignore
+.venv
+.pytest_cache
+__pycache__
+*.py[cod]
+tests
+IMPLEMENTATION_PLAN.md
+TASKS.md
+requirements-dev.txt
+pyproject.toml

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="인메모리 서버 헬스 체크 관리 대시보드" />
+    <title>Health Check Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script defer src="/static/app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PRIVATE NETWORK MONITORING</p>
+        <h1>Health Check Dashboard</h1>
+      </div>
+      <div class="header-actions">
+        <span id="last-refreshed" class="muted">불러오는 중…</span>
+        <button id="refresh-button" class="button secondary" type="button">새로고침</button>
+        <a class="button secondary" href="/docs" target="_blank" rel="noreferrer">Swagger 열기</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="summary-grid" aria-label="상태 요약">
+        <article class="summary-card total"><span>전체</span><strong id="total-count">0</strong></article>
+        <article class="summary-card up"><span>정상</span><strong id="up-count">0</strong></article>
+        <article class="summary-card down"><span>장애</span><strong id="down-count">0</strong></article>
+        <article class="summary-card unknown"><span>미점검</span><strong id="unknown-count">0</strong></article>
+      </section>
+
+      <section class="panel" aria-labelledby="monitor-title">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">MONITORS</p>
+            <h2 id="monitor-title">모니터 대상</h2>
+          </div>
+          <button id="show-monitor-form" class="button primary" type="button">+ 모니터 등록</button>
+        </div>
+
+        <form id="monitor-form" class="form card-form hidden">
+          <div class="form-heading">
+            <h3 id="monitor-form-title">모니터 등록</h3>
+            <button id="cancel-monitor-edit" class="text-button" type="button">닫기</button>
+          </div>
+          <div class="form-grid">
+            <label>이름<input name="name" required maxlength="100" placeholder="주문 API" /></label>
+            <label>헬스 체크 URL<input name="url" type="url" required placeholder="https://api.example.com/health" /></label>
+            <label>요청 메서드<select name="method"><option value="GET">GET</option><option value="HEAD">HEAD</option></select></label>
+            <label>점검 주기(초)<input name="interval_seconds" type="number" min="5" value="30" required /></label>
+            <label>요청 타임아웃(초)<input name="timeout_seconds" type="number" min="0.1" max="120" step="0.1" value="5" required /></label>
+            <label>최대 시도 횟수<input name="max_attempts" type="number" min="1" max="5" value="3" required /></label>
+            <label>재시도 대기(초)<input name="retry_delay_seconds" type="number" min="1" max="300" value="5" required /></label>
+            <label>정상 상태 코드<input name="expected_status_codes" value="200" placeholder="200, 204" required /></label>
+          </div>
+          <details class="auth-details">
+            <summary>JWT 로그인 인증이 필요한 경우</summary>
+            <p class="form-help">로그인 응답에서 JWT를 받아 헬스 체크 요청의 Authorization 헤더에 넣습니다. 인증 정보는 조회 화면에 표시되지 않습니다.</p>
+            <div class="form-grid">
+              <label>로그인 URL<input name="login_url" type="url" placeholder="https://api.example.com/login" /></label>
+              <label>토큰 JSON 경로<input name="token_response_path" placeholder="access_token 또는 data.accessToken" /></label>
+              <label>토큰 헤더 이름<input name="token_header_name" value="Authorization" /></label>
+              <label>토큰 접두어<input name="token_prefix" value="Bearer" /></label>
+              <label class="full-width">로그인 JSON 본문<textarea name="login_payload" rows="4" placeholder='{"username":"monitor","password":"..."}'></textarea></label>
+            </div>
+          </details>
+          <div class="form-actions"><button class="button primary" type="submit">저장</button></div>
+        </form>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>상태</th><th>이름 / URL</th><th>최근 결과</th><th>다음 점검</th><th>작업</th></tr></thead>
+            <tbody id="monitor-list"><tr><td colspan="5" class="empty">등록된 모니터가 없습니다.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="two-column">
+        <section class="panel" aria-labelledby="recipient-title">
+          <div class="panel-heading"><div><p class="eyebrow">RECIPIENTS</p><h2 id="recipient-title">이메일 수신자</h2></div></div>
+          <form id="recipient-form" class="form inline-form">
+            <input name="name" maxlength="100" placeholder="이름 (선택)" aria-label="수신자 이름" />
+            <input name="email" type="email" required placeholder="alerts@example.com" aria-label="수신자 이메일" />
+            <button class="button primary" type="submit">추가</button>
+          </form>
+          <ul id="recipient-list" class="recipient-list"><li class="empty">등록된 수신자가 없습니다.</li></ul>
+        </section>
+
+        <section class="panel" aria-labelledby="email-title">
+          <div class="panel-heading"><div><p class="eyebrow">SMTP</p><h2 id="email-title">이메일 발신 설정</h2></div></div>
+          <form id="email-form" class="form">
+            <div class="form-grid compact-grid">
+              <label>SMTP 호스트<input name="smtp_host" required placeholder="smtp-relay.gmail.com" /></label>
+              <label>포트<input name="smtp_port" type="number" min="1" max="65535" value="587" required /></label>
+              <label>발신자 이메일<input name="from_address" type="email" required placeholder="monitor@example.com" /></label>
+              <label>SMTP 사용자명<input name="username" placeholder="IP Relay는 비워 둠" /></label>
+              <label class="full-width">SMTP 비밀번호<input name="password" type="password" placeholder="현재 비밀번호는 표시되지 않습니다" autocomplete="new-password" /></label>
+              <label class="checkbox-label"><input name="use_starttls" type="checkbox" checked /> STARTTLS 사용</label>
+            </div>
+            <p id="email-config-summary" class="form-help">SMTP 설정이 없습니다.</p>
+            <div class="form-actions"><button class="button primary" type="submit">SMTP 설정 저장</button><button id="send-email-test" class="button secondary" type="button">테스트 메일 발송</button></div>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
