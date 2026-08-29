@@ -39,9 +39,13 @@ JWT 로그인 payload와 SMTP 비밀번호는 화면에 다시 표시하지 않�
 JWT가 필요한 대상은 `auth.login_url`, `auth.login_payload`, `auth.token_response_path`를 함께 입력합니다. 로그인 payload와 SMTP 비밀번호, JWT는 조회 응답·로그·이메일에 포함하지 않습니다.
 
 초기에 가상환경을 만든다면 
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
+```
 
 이미 가상 환경이 있다면 
+```bash
 source .venv/bin/activate
+```
