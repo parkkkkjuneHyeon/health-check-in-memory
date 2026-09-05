@@ -151,7 +151,7 @@ created_at: datetime
 updated_at: datetime
 ```
 
-초기 구현 검증 시 `pjh@literion.co.kr`를 수신자로 등록한다. 장애 또는 복구 이벤트가 발생하면 `enabled == true`인 모든 수신자에게 이메일을 보낸다.
+초기 구현 검증 시 `test@naver.com`를 수신자로 등록한다. 장애 또는 복구 이벤트가 발생하면 `enabled == true`인 모든 수신자에게 이메일을 보낸다.
 
 ## 7. 스케줄링과 상태 전이
 
