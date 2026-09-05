@@ -235,7 +235,7 @@ HTTP 오류 응답을 받은 경우에는 응답 본문에서 서버 오류 메�
 ```json
 {
   "name": "테스트 수신자",
-  "email": "pjh@literion.co.kr",
+  "email": "test@naver.com",
   "enabled": true
 }
 ```
